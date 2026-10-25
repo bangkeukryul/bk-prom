@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BK프롬</title>
+<meta name="description" content="자주 쓰는 AI 프롬프트 · 결과물 · 증명사진 · 로고를 한곳에 모아 두는 보관함">
+<meta name="theme-color" content="#0e9f6e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BK프롬">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand"><img src="icon-192.png" alt="" class="brand-ico"><h1>BK프롬</h1></div>
+    <nav class="links">
+      <a href="https://bangkeukryul.github.io/bk-card/">BK톡톡</a>
+      <a href="https://bangkeukryul.github.io/bk-shorts/">BK쇼츠</a>
+      <button id="installBtn" type="button" hidden>앱 설치</button>
+    </nav>
+  </header>
+
+  <!-- 위쪽 메뉴: 백업 · 복원 -->
+  <section class="toolbar">
+    <button type="button" class="tb" id="backupBtn">💾 데이터 백업<small>다운로드</small></button>
+    <label class="tb">📂 데이터 복원<small>업로드</small><input type="file" id="restoreFile" accept=".json,application/json"></label>
+  </section>
+  <p class="stat tnum" id="stat"></p>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" data-tab="prompt" aria-current="page">📝 프롬프트 · 결과물</button>
+    <button type="button" data-tab="image">🖼 이미지 보관함</button>
+  </nav>
+
+  <div class="filters">
+    <input type="search" id="q" placeholder="🔍 검색 (제목 · 내용 · 분류)" aria-label="검색">
+    <select id="sort" aria-label="정렬">
+      <option value="new">최신순</option>
+      <option value="old">오래된순</option>
+      <option value="name">이름순</option>
+      <option value="used">많이 쓴 순</option>
+    </select>
+  </div>
+  <div class="chips" id="catChips"></div>
+
+  <main id="list" class="list"></main>
+  <div class="empty" id="empty" hidden></div>
+
+  <!-- 🔗 주소 · QR코드 보내기 -->
+  <details class="box share" id="shareBox">
+    <summary>🔗 BK프롬 주소 · QR코드 보내기</summary>
+    <p class="hint">카톡에 주소만 보내거나, QR코드 이미지를 보내 주세요.</p>
+    <input id="appUrl" type="text" readonly value="https://bangkeukryul.github.io/bk-prom/">
+    <div class="two-btn">
+      <button type="button" class="btn primary" id="copyUrlBtn">📋 주소 복사</button>
+      <button type="button" class="btn" id="copyMsgBtn">📋 안내 문구 복사</button>
+    </div>
+    <img id="qrImg" alt="BK프롬 QR코드">
+    <div class="two-btn">
+      <button type="button" class="btn" id="qrSave">⬇ QR코드 크게 저장</button>
+      <button type="button" class="btn kakao" id="qrShareBtn">💬 QR 카톡 보내기</button>
+    </div>
+    <p class="hint" id="qrMsg"></p>
+  </details>
+
+  <!-- 🛠 관리자 메뉴 (만든 사람용) -->
+  <details class="box admin" id="adminBox" hidden>
+    <summary>🛠 관리자 메뉴 (만든 사람용 · 백업)</summary>
+    <p class="hint">지금 버전: <b id="adminVer" class="tnum">…</b></p>
+    <p class="hint">지금 사이트에 올라가 있는 <b>프로그램 파일 전체</b>를 날짜가 붙은 압축파일 하나로 휴대폰에 저장해요. <b>새 파일을 올리기 전에 꼭 한 번</b> 눌러 두세요. (내가 저장한 프롬프트·사진 백업은 맨 위 ‘💾 데이터 백업’이에요)</p>
+    <div class="admin-urls">
+      <b>🔗 관리용 주소</b>
+      <p>① 파일 올리기: <b>github.com/bangkeukryul/bk-prom/upload/main</b><br>
+      ② 저장소(파일 목록·변경 기록): <b>github.com/bangkeukryul/bk-prom</b><br>
+      ③ 관리자 메뉴 켜기: <b>bangkeukryul.github.io/bk-prom/?bkadmin</b><br>
+      ④ 앱 주소(공유용): <b>bangkeukryul.github.io/bk-prom</b></p>
+      <button type="button" class="btn wide" id="copyAdminAll">📋 관리용 주소 전체 복사 (카톡 ‘나와의 채팅’에 저장)</button>
+      <div class="two-btn">
+        <button type="button" class="btn" id="copyUpload">📋 ① 올리기 주소만 복사</button>
+        <a class="btn" href="https://github.com/bangkeukryul/bk-prom/upload/main" target="_blank" rel="noopener">↗ 올리기 화면 열기</a>
+      </div>
+      <p class="hint" id="adminCopyMsg"></p>
+    </div>
+    <button type="button" class="btn primary wide" id="backupProgBtn">💾 지금 버전 백업하기</button>
+    <p class="hint" id="backupMsg"></p>
+    <button type="button" class="btn wide" id="adminOff">🙈 이 휴대폰에서 관리자 메뉴 숨기기</button>
+    <div class="admin-tip">
+      <b>🚑 업데이트 후 문제가 생기면 (되돌리기)</b>
+      <ol>
+        <li><b>내 파일 → 다운로드</b>에서 문제가 생기기 전 날짜의 <b>BK프롬_백업_날짜.zip</b>을 길게 눌러 <b>압축 풀기</b>.</li>
+        <li><b>github.com/bangkeukryul/bk-prom/upload/main</b> → <b>choose your files</b> → 그 폴더의 파일을 모두 선택 (백업안내.txt 는 빼도 돼요) → <b>Commit changes</b>.</li>
+        <li>1~2분 뒤 앱을 닫았다가 <b>두 번</b> 열면 예전 버전으로 돌아와요.</li>
+      </ol>
+    </div>
+  </details>
+
+  <p class="foot">저장한 내용은 이 휴대폰(이 브라우저) 안에만 있어요. 어디에도 올라가지 않아요.<br>크롬의 ‘사이트 데이터 삭제’를 하면 함께 지워지니 가끔 <b>💾 데이터 백업</b>을 해 두세요.</p>
+  <footer class="foot-brand"><button type="button" id="bkFoot" aria-label="BK Agent">BK Agent · 비케이</button></footer>
+</div>
+
+<button type="button" class="fab" id="addBtn">＋ 새로 저장</button>
+
+<!-- 저장 · 수정 창 -->
+<dialog id="editDlg" class="dlg">
+  <form id="editForm" method="dialog">
+    <h2 id="editTitle">새로 저장</h2>
+    <label class="fl"><span>제목 <span class="req">*</span></span><input type="text" id="fTitle" maxlength="80" placeholder="예: 추석 인사카드 프롬프트" required></label>
+    <label class="fl">분류<input type="text" id="fCat" list="catList" maxlength="20" placeholder="골라도 되고 직접 써도 돼요"></label>
+    <datalist id="catList"></datalist>
+    <div data-for="prompt">
+      <label class="fl">📝 프롬프트<textarea id="fPrompt" rows="7" placeholder="AI에게 보낸 프롬프트를 붙여넣으세요"></textarea></label>
+      <label class="fl">✨ 결과물 글 (선택)<textarea id="fResult" rows="4" placeholder="AI가 써 준 글, 메모 등"></textarea></label>
+      <div class="fl">🖼 결과물 사진 (선택 · 여러 장)
+        <div class="thumbs" id="fResImgs"></div>
+        <label class="pick">＋ 사진 추가<input type="file" id="fResFile" accept="image/*" multiple></label>
+      </div>
+    </div>
+    <div data-for="image">
+      <div class="fl"><span>🖼 사진 <span class="req">*</span></span>
+        <div class="thumbs" id="fImgPrev"></div>
+        <label class="pick" id="fImgPick">＋ 사진 고르기 <small>(여러 장 고르면 한 번에 저장)</small><input type="file" id="fImgFile" accept="image/*" multiple></label>
+      </div>
+      <label class="fl">메모 (선택)<textarea id="fMemo" rows="2" placeholder="예: 2026년 증명사진, 배경 흰색"></textarea></label>
+    </div>
+    <label class="chk"><input type="checkbox" id="fFav"> ⭐ 즐겨찾기</label>
+    <div class="dlg-btns">
+      <button type="button" class="btn" id="editCancel">취소</button>
+      <button type="submit" class="btn primary" id="editSave">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- 사진 크게 보기 -->
+<dialog id="viewDlg" class="dlg view">
+  <div class="view-img"><img id="vImg" alt=""></div>
+  <h2 id="vTitle"></h2>
+  <p class="hint" id="vInfo"></p>
+  <div class="act-grid">
+    <button type="button" class="btn" data-v="down">⬇ 다운로드</button>
+    <button type="button" class="btn kakao" data-v="kakao">💬 카톡 보내기</button>
+    <button type="button" class="btn" data-v="copy">📋 이미지 복사</button>
+    <button type="button" class="btn" data-v="shorts">🪪 BK쇼츠 명함 얼굴로</button>
+    <button type="button" class="btn" data-v="edit">✏️ 수정</button>
+    <button type="button" class="btn danger" data-v="del">🗑 삭제</button>
+  </div>
+  <button type="button" class="btn wide" id="vClose">닫기</button>
+</dialog>
+
+<!-- 복원 방법 고르기 -->
+<dialog id="restoreDlg" class="dlg">
+  <h2>📂 데이터 복원</h2>
+  <p id="restoreInfo"></p>
+  <div class="restore-btns">
+    <button type="button" class="btn primary" data-r="merge">➕ 지금 데이터에 합치기<small>같은 항목은 백업 것으로 바뀌어요</small></button>
+    <button type="button" class="btn danger" data-r="replace">🔄 전부 바꾸기<small>지금 데이터를 지우고 백업으로 바꿔요</small></button>
+    <button type="button" class="btn" data-r="cancel">취소</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="db.js"></script>
+<script src="app.js"></script>
+<script src="share.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
