@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BK프롬</title>
-<meta name="description" content="자주 쓰는 AI 프롬프트 · 결과물 · 증명사진 · 로고를 한곳에 모아 두는 보관함">
+<meta name="description" content="관리자 전용 보관함">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0e9f6e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -16,9 +17,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
 <link rel="stylesheet" href="style.css">
+<script>/* 관리자가 아니면 처음부터 내용을 가림 (깜빡임 방지) */try{if(localStorage.getItem('bkAdmin')!=='1'&&!/[?&]bkadmin\b/.test(location.search))document.documentElement.classList.add('pre-lock')}catch(e){}</script>
 </head>
 <body>
-<div class="app">
+<!-- 🔒 만든 사람 전용: 관리자 표시가 없는 휴대폰에서는 이 화면만 보임 -->
+<div class="gate" id="gate" hidden>
+  <div class="gate-box">
+    <div class="gate-ico">🔒</div>
+    <h1>관리자 전용 화면이에요</h1>
+    <p>이 화면은 만든 사람만 쓰는 보관함이에요.<br>BK톡톡을 쓰시려면 아래 버튼을 눌러 주세요.</p>
+    <a class="btn primary wide" href="https://bangkeukryul.github.io/bk-card/">BK톡톡으로 가기</a>
+  </div>
+  <button type="button" class="gate-foot" id="gateFoot" aria-label="BK Agent">BK Agent · 비케이</button>
+</div>
+<div class="app" id="app">
 
   <header class="top">
     <div class="brand"><img src="icon-192.png" alt="" class="brand-ico"><h1>BK프롬</h1></div>
@@ -37,8 +49,10 @@
   <p class="stat tnum" id="stat"></p>
 
   <nav class="tabs" role="tablist">
-    <button type="button" data-tab="prompt" aria-current="page">📝 프롬프트 · 결과물</button>
-    <button type="button" data-tab="image">🖼 이미지 보관함</button>
+    <button type="button" data-tab="all">📋 전체</button>
+    <button type="button" data-tab="prompt" aria-current="page">📝 프롬프트</button>
+    <button type="button" data-tab="image">🖼 이미지</button>
+    <button type="button" data-tab="doc">📁 문서</button>
   </nav>
 
   <div class="filters">
@@ -49,28 +63,12 @@
       <option value="name">이름순</option>
       <option value="used">많이 쓴 순</option>
     </select>
+    <button type="button" class="viewbtn" id="viewBtn" aria-label="보기 방식 바꾸기">☰ 목록</button>
   </div>
   <div class="chips" id="catChips"></div>
 
   <main id="list" class="list"></main>
   <div class="empty" id="empty" hidden></div>
-
-  <!-- 🔗 주소 · QR코드 보내기 -->
-  <details class="box share" id="shareBox">
-    <summary>🔗 BK프롬 주소 · QR코드 보내기</summary>
-    <p class="hint">카톡에 주소만 보내거나, QR코드 이미지를 보내 주세요.</p>
-    <input id="appUrl" type="text" readonly value="https://bangkeukryul.github.io/bk-prom/">
-    <div class="two-btn">
-      <button type="button" class="btn primary" id="copyUrlBtn">📋 주소 복사</button>
-      <button type="button" class="btn" id="copyMsgBtn">📋 안내 문구 복사</button>
-    </div>
-    <img id="qrImg" alt="BK프롬 QR코드">
-    <div class="two-btn">
-      <button type="button" class="btn" id="qrSave">⬇ QR코드 크게 저장</button>
-      <button type="button" class="btn kakao" id="qrShareBtn">💬 QR 카톡 보내기</button>
-    </div>
-    <p class="hint" id="qrMsg"></p>
-  </details>
 
   <!-- 🛠 관리자 메뉴 (만든 사람용) -->
   <details class="box admin" id="adminBox" hidden>
@@ -107,7 +105,7 @@
   <footer class="foot-brand"><button type="button" id="bkFoot" aria-label="BK Agent">BK Agent · 비케이</button></footer>
 </div>
 
-<button type="button" class="fab" id="addBtn">＋ 새로 저장</button>
+<button type="button" class="fab" id="addBtn" data-lock>＋ 새로 저장</button>
 
 <!-- 저장 · 수정 창 -->
 <dialog id="editDlg" class="dlg">
@@ -130,6 +128,13 @@
         <label class="pick" id="fImgPick">＋ 사진 고르기 <small>(여러 장 고르면 한 번에 저장)</small><input type="file" id="fImgFile" accept="image/*" multiple></label>
       </div>
       <label class="fl">메모 (선택)<textarea id="fMemo" rows="2" placeholder="예: 2026년 증명사진, 배경 흰색"></textarea></label>
+    </div>
+    <div data-for="doc">
+      <div class="fl"><span>📁 파일 <span class="req">*</span> <small>엑셀 · PDF · 워드 · 한글 · PPT · 압축파일 등</small></span>
+        <div class="files" id="fDocList"></div>
+        <label class="pick" id="fDocPick">＋ 파일 고르기 <small>(여러 개 고르면 한 번에 저장)</small><input type="file" id="fDocFile" multiple></label>
+      </div>
+      <label class="fl">메모 (선택)<textarea id="fDocMemo" rows="2" placeholder="예: 2026년 자동차보험 청구서류"></textarea></label>
     </div>
     <label class="chk"><input type="checkbox" id="fFav"> ⭐ 즐겨찾기</label>
     <div class="dlg-btns">
@@ -155,6 +160,23 @@
   <button type="button" class="btn wide" id="vClose">닫기</button>
 </dialog>
 
+<!-- 문서 자세히 보기 -->
+<dialog id="docDlg" class="dlg view">
+  <div class="doc-big"><span id="dIco">📄</span></div>
+  <h2 id="dTitle"></h2>
+  <p class="hint" id="dInfo"></p>
+  <p class="doc-memo" id="dMemo"></p>
+  <div class="act-grid">
+    <button type="button" class="btn primary" data-d="open">📂 열기</button>
+    <button type="button" class="btn kakao" data-d="kakao">💬 카톡 보내기</button>
+    <button type="button" class="btn" data-d="down">⬇ 다운로드</button>
+    <button type="button" class="btn" data-d="edit">✏️ 수정</button>
+    <button type="button" class="btn danger wide2" data-d="del">🗑 삭제</button>
+  </div>
+  <p class="hint">휴대폰에서 ‘열기’를 누르면 파일이 다운로드돼요. 화면 위 알림이나 <b>내 파일 → 다운로드</b>에서 눌러 엑셀 · 워드 · 한글 앱으로 열어요.</p>
+  <button type="button" class="btn wide" id="dClose">닫기</button>
+</dialog>
+
 <!-- 복원 방법 고르기 -->
 <dialog id="restoreDlg" class="dlg">
   <h2>📂 데이터 복원</h2>
@@ -170,7 +192,6 @@
 
 <script src="db.js"></script>
 <script src="app.js"></script>
-<script src="share.js"></script>
 <script src="admin.js"></script>
 </body>
 </html>

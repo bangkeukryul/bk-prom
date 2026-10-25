@@ -10,7 +10,7 @@
   const REPO = 'https://github.com/bangkeukryul/bk-prom';
   const UPLOAD = REPO + '/upload/main';
   const APP = 'https://bangkeukryul.github.io/bk-prom/';
-  const FILES = ['index.html', 'style.css', 'app.js', 'db.js', 'admin.js', 'share.js', 'sw.js', 'manifest.webmanifest',
+  const FILES = ['index.html', 'style.css', 'app.js', 'db.js', 'admin.js', 'sw.js', 'manifest.webmanifest',
     'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png', 'README.md'];
 
   // ── 켜기 / 끄기 ──
@@ -24,6 +24,10 @@
   const box = $('adminBox');
   const adminVis = v => document.querySelectorAll('.adminOnly').forEach(e => { e.style.display = v ? '' : 'none'; });
   function show(v, open) {
+    // BK프롬은 만든 사람 전용: 관리자가 아니면 잠금 화면만 보임
+    document.body.classList.toggle('locked', !v);
+    document.documentElement.classList.remove('pre-lock');
+    $('gate').hidden = !!v;
     box.hidden = !v;
     adminVis(v);
     if (v && open) box.open = true;
@@ -33,7 +37,7 @@
 
   // 숨은 방법: 맨 아래 'BK Agent · 비케이'를 3초 안에 7번
   let n = 0, t = 0;
-  $('bkFoot').addEventListener('click', () => {
+  const tap7 = () => {
     const now = Date.now();
     if (now - t > 3000) n = 0;
     t = now; n++;
@@ -42,9 +46,11 @@
     const v = box.hidden;
     try { v ? localStorage.setItem(KEY, '1') : localStorage.removeItem(KEY); } catch (e) { /* 저장 불가 */ }
     show(v, true);
-    if (v) box.scrollIntoView({ behavior: 'smooth' });
-    alert(v ? '🛠 관리자 메뉴를 켰어요. (이 휴대폰에서만 보여요 · BK톡톡에서도 켜져요)' : '관리자 메뉴를 숨겼어요.');
-  });
+    if (v && !$('gate').hidden) return; if (v) box.scrollIntoView({ behavior: 'smooth' });
+    alert(v ? '🛠 관리자 메뉴를 켰어요. (이 휴대폰에서만 보여요 · BK톡톡에서도 켜져요)' : '관리자 메뉴를 숨겼어요. BK프롬은 잠겨요.');
+  };
+  $('bkFoot').addEventListener('click', tap7);
+  $('gateFoot').addEventListener('click', tap7);
   $('adminOff').addEventListener('click', () => {
     try { localStorage.removeItem(KEY); } catch (e) { /* 무시 */ }
     show(false);

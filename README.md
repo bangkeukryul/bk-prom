@@ -1,6 +1,6 @@
 # BK프롬 (PWA)
 
-BK톡톡 · BK쇼츠의 가족 앱이에요. 주소: https://bangkeukryul.github.io/bk-prom/
+**만든 사람 전용** 앱이에요 (관리자 표시가 없는 휴대폰은 잠금 화면만 보임). 주소: https://bangkeukryul.github.io/bk-prom/
 
 자주 쓰는 **AI 프롬프트 · 결과물**과 **증명사진 · 로고 · 도장 같은 이미지**를 한곳에 모아 두고,
 버튼 한 번으로 복사 · 카카오톡 보내기 · 다운로드하는 보관함입니다.
